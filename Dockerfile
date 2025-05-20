@@ -67,7 +67,7 @@ RUN sudo apt-get install libssl-dev libusb-1.0-0-dev libudev-dev pkg-config libg
     sudo apt-get install git wget cmake build-essential -y && \
     sudo apt-get install libglfw3-dev libgl1-mesa-dev libglu1-mesa-dev at -y
 
-RUN pip3 install mediapipe pyrealsense2
+RUN pip3 install mediapipe pyrealsense2 stable-baselines3 gymnasium
 
 # Build the ROS workspace
 WORKDIR /home/$USERNAME/iri_lab/iri_ws
