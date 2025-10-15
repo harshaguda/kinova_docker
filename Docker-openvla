@@ -1,0 +1,45 @@
+FROM nvcr.io/nvidia/pytorch:24.03-py3
+
+# Set working directory
+WORKDIR /workspace
+
+# (Optional) Install git if not present
+RUN apt-get update && apt-get install -y git
+RUN apt-get install -y zsh tmux
+RUN apt update && apt install -y libegl1-mesa libegl1-mesa-dev libgl1-mesa-glx libgles2-mesa-dev libosmesa6-dev
+# Install Python dependencies (edit as needed)
+# COPY pyproject.toml .
+# COPY src/ ./src
+# COPY conf/ ./conf
+RUN pip install --upgrade pip
+
+
+RUN git clone https://github.com/Lifelong-Robot-Learning/LIBERO.git
+WORKDIR /workspace/LIBERO
+RUN pip install -e .
+
+WORKDIR /workspace/
+# Install openvla
+RUN git clone https://github.com/openvla/openvla.git
+WORKDIR /workspace/openvla
+RUN pip install -e .[dev]
+RUN pip install -r experiments/robot/libero/libero_requirements.txt
+RUN sed -i '45s/.*/#attn_implementation/' experiments/robot/openvla_utils.py
+RUN sed -i '44s/.*/#attn_implementation/' vla-scripts/extern/verify_openvla.py 
+# Install robot package with OpenVLA dependencies
+# RUN pip install -e .[dev,openvla]
+# Ensure compatible OpenCV version
+RUN pip install opencv-python==4.7.0.72
+
+# RUN pip3 uninstall flash_attn
+
+RUN pip3 install --upgrade --pre torch torchvision --index-url https://download.pytorch.org/whl/nightly/cu130
+
+
+# Set environment variables for CUDA (usually already set in base image)
+ENV CUDA_HOME=/usr/local/cuda
+ENV PATH=$CUDA_HOME/bin:$PATH
+ENV LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
+# Set environment variables for headless rendering
+ENV MUJOCO_GL=osmesa
+ENV PYOPENGL_PLATFORM=osmesa
